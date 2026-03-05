@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8/3</title>
+
+<style>
+
+body{
+margin:0;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:url("nen.gif");
+background-size:cover;
+background-position:center;
+overflow:hidden;
+font-family:sans-serif;
+}
+
+/* sao */
+
+.star{
+position:absolute;
+width:3px;
+height:3px;
+background:white;
+border-radius:50%;
+animation:blink 2s infinite;
+}
+
+@keyframes blink{
+0%,100%{opacity:0.2}
+50%{opacity:1}
+}
+
+/* chữ */
+
+.title-img{
+position:absolute;
+top:15px;
+left:50%;
+transform:translateX(-50%);
+width:260px;
+animation:float 4s ease-in-out infinite;
+z-index:2;
+}
+
+@keyframes float{
+0%{transform:translate(-50%,0)}
+50%{transform:translate(-50%,10px)}
+100%{transform:translate(-50%,0)}
+}
+
+/* hoa */
+
+.flowers{
+text-align:center;
+position:relative;
+z-index:2;
+}
+
+.flowers img{
+width:230px;
+animation:flowerGlow 3s ease-in-out infinite;
+}
+
+@keyframes flowerGlow{
+0%{transform:scale(1);filter:drop-shadow(0 0 5px pink);}
+50%{transform:scale(1.05);filter:drop-shadow(0 0 25px pink);}
+100%{transform:scale(1);filter:drop-shadow(0 0 5px pink);}
+}
+
+/* hoa góc */
+
+.bottom-img{
+position:fixed;
+left:0;
+bottom:0;
+width:100%;
+pointer-events:none;
+z-index:1;
+}
+
+.bottom-img img{
+width:100%;
+opacity:0.9;
+}
+
+/* nút thư */
+
+.letter-btn{
+position:absolute;
+top:160px;
+left:58%;
+transform:translateX(-50%) rotate(-12deg);
+background:#ffe3e3;
+border:none;
+padding:12px 25px;
+border-radius:20px;
+font-size:20px;
+cursor:pointer;
+box-shadow:0 0 15px pink;
+}
+
+/* thư */
+
+.message{
+position:fixed;
+top:45%;
+left:50%;
+transform:translate(-50%,-50%) scale(0);
+width:320px;
+max-width:90%;
+max-height:60vh;
+overflow-y:auto;
+background:#fff2e6;
+border-radius:20px;
+padding:20px;
+box-shadow:0 0 20px pink;
+transition:0.4s;
+opacity:0;
+line-height:1.6;
+z-index:3;
+}
+
+.message.show{
+transform:translate(-50%,-50%) scale(1);
+opacity:1;
+}
+
+.close{
+position:absolute;
+right:12px;
+top:10px;
+cursor:pointer;
+font-weight:bold;
+}
+
+/* hiệu ứng đánh máy */
+
+#typing::after{
+content:"|";
+animation:blinkCursor 1s infinite;
+}
+
+@keyframes blinkCursor{
+0%,100%{opacity:0}
+50%{opacity:1}
+}
+
+/* màn hình ảnh */
+
+#photoScreen{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+background:black;
+opacity:0;
+transform:scale(1.2);
+pointer-events:none;
+transition:opacity 1.5s ease, transform 1.5s ease;
+overflow:hidden;
+z-index:999;
+}
+
+#photoScreen.show{
+opacity:1;
+transform:scale(1);
+pointer-events:auto;
+}
+
+/* nền tim */
+
+.heart-bg{
+position:absolute;
+width:100%;
+height:100%;
+background:url("heart.gif");
+background-size:cover;
+opacity:0;
+transition:opacity 2s;
+}
+
+/* đếm */
+
+#countdown{
+position:absolute;
+font-size:90px;
+font-weight:bold;
+color:white;
+text-shadow:0 0 25px pink,0 0 40px red;
+z-index:1000;
+animation:countEffect 1s ease;
+}
+
+@keyframes countEffect{
+0%{transform:scale(0.3);opacity:0;}
+50%{transform:scale(1.4);opacity:1;}
+100%{transform:scale(1);opacity:1;}
+}
+
+/* quả địa cầu */
+
+#photoSphere{
+position:absolute;
+top:50%;
+left:50%;
+transform-style:preserve-3d;
+transform:translate(-50%,-50%);
+animation:rotateSphere 25s linear infinite;
+display:none;
+z-index:3;
+}
+
+#photoSphere img{
+position:absolute;
+width:110px;
+height:110px;
+object-fit:cover;
+border-radius:12px;
+box-shadow:0 0 15px pink;
+}
+
+@keyframes rotateSphere{
+from{
+transform:translate(-50%,-50%) rotateX(-10deg) rotateY(0deg);
+}
+to{
+transform:translate(-50%,-50%) rotateX(-10deg) rotateY(360deg);
+}
+}
+
+/* lời chúc rơi */
+
+.falling-msg{
+position:absolute;
+top:-60px;
+padding:8px 14px;
+background:rgba(255,255,255,0.9);
+color:#ff4d6d;
+font-size:14px;
+border-radius:20px;
+box-shadow:0 0 10px pink;
+white-space:nowrap;
+animation:fallMsg linear forwards;
+z-index:2;
+}
+
+@keyframes fallMsg{
+0%{
+transform:translateY(-100px);
+opacity:0;
+}
+20%{
+opacity:1;
+}
+100%{
+transform:translateY(120vh);
+opacity:0;
+}
+}
+
+</style>
+</head>
+
+<body>
+
+<img src="womanday.png" class="title-img">
+
+<audio id="music" loop>
+<source src="nhac.mp3" type="audio/mp3">
+</audio>
+
+<script>
+const music=document.getElementById("music")
+
+function playMusic(){
+music.play().catch(()=>{})
+}
+
+document.addEventListener("click",playMusic,{once:true})
+document.addEventListener("touchstart",playMusic,{once:true})
+</script>
+
+<div class="flowers">
+<img src="hoa.gif">
+<button class="letter-btn" onclick="openLetter()">💌</button>
+</div>
+
+<div class="bottom-img">
+<img src="bottom.png">
+</div>
+
+<div class="message" id="letter">
+<div class="close" onclick="closeLetter()">✖</div>
+<h2>Gửi các bạn nữ 💕</h2>
+<p id="typing"></p>
+</div>
+
+<div id="photoScreen">
+
+<div class="heart-bg"></div>
+
+<div id="fallingMessages"></div>
+
+<div id="countdown">3</div>
+
+<div id="photoSphere">
+<img src="anh1.jpg">
+<img src="anh2.jpg">
+<img src="anh3.jpg">
+<img src="anh4.jpg">
+<img src="anh5.jpg">
+<img src="anh6.jpg">
+<img src="anh7.jpg">
+<img src="anh8.jpg">
+<img src="anh9.jpg">
+<img src="anh10.jpg">
+<img src="anh11.jpg">
+<img src="anh12.jpg">
+<img src="anh13.jpg">
+<img src="anh14.jpg">
+<img src="anh15.jpg">
+<img src="anh16.jpg">
+<img src="anh17.jpg">
+</div>
+
+</div>
+
+<script>
+
+/* sao */
+
+for(let i=0;i<60;i++){
+let s=document.createElement("div")
+s.className="star"
+s.style.left=Math.random()*100+"%"
+s.style.top=Math.random()*100+"%"
+document.body.appendChild(s)
+}
+
+/* mở thư */
+
+function openLetter(){
+document.getElementById("letter").classList.add("show")
+startTyping()
+setTimeout(startCountdown,70000)
+}
+
+function closeLetter(){
+document.getElementById("letter").classList.remove("show")
+}
+
+/* đếm */
+
+function startCountdown(){
+
+let screen=document.getElementById("photoScreen")
+let cd=document.getElementById("countdown")
+
+screen.classList.add("show")
+
+let count=3
+cd.innerText=count
+
+let interval=setInterval(()=>{
+
+count--
+
+if(count>0){
+
+cd.innerText=count
+
+}else if(count===0){
+
+cd.innerText="BẮT ĐẦU"
+
+}else{
+
+cd.style.display="none"
+clearInterval(interval)
+
+setTimeout(()=>{
+document.querySelector(".heart-bg").style.opacity="0.4"
+},500)
+
+document.getElementById("photoSphere").style.display="block"
+
+createSphere()
+
+startFallingMessages()
+
+}
+
+},1000)
+
+}
+
+/* quả cầu ảnh */
+
+function createSphere(){
+
+const imgs = document.querySelectorAll("#photoSphere img")
+const total = imgs.length
+const radius = 320
+
+imgs.forEach((img,i)=>{
+
+let phi = Math.acos(-1 + (2*i)/total)
+let theta = Math.sqrt(total*Math.PI) * phi
+
+let x = radius * Math.cos(theta) * Math.sin(phi)
+let y = radius * Math.sin(theta) * Math.sin(phi)
+let z = radius * Math.cos(phi)
+
+img.style.transform=`translate3d(${x}px,${y}px,${z}px)`
+
+})
+
+}
+
+/* chữ rơi */
+
+const messages=[
+"Chúc bạn luôn xinh đẹp 🌸",
+"Chúc bạn luôn vui vẻ 💖",
+"Chúc bạn nhiều may mắn 🍀",
+"Luôn đạt điểm cao 📚",
+"Luôn hạnh phúc nhé ✨",
+"Chúc 8/3 thật vui 🎉"
+]
+
+function startFallingMessages(){
+
+setInterval(()=>{
+
+let msg=document.createElement("div")
+msg.className="falling-msg"
+
+msg.innerText=messages[Math.floor(Math.random()*messages.length)]
+
+msg.style.left=Math.random()*90+"%"
+msg.style.animationDuration=(6+Math.random()*4)+"s"
+
+document.getElementById("fallingMessages").appendChild(msg)
+
+setTimeout(()=>{msg.remove()},70000)
+
+},70000)
+
+}
+
+/* chữ đánh máy */
+
+const text=`Ngày 8/3 là dịp đặc biệt để mình gửi những lời chúc tốt đẹp nhất đến các bạn – những người bạn thân đã luôn mang lại cho mình rất nhiều niềm vui trong cuộc sống. Dù mỗi người đều có những công việc và cuộc sống riêng, nhưng tình bạn của chúng ta vẫn luôn là điều mình trân trọng.
+
+Mình vẫn nhớ những lần chúng ta có dịp gặp nhau, cùng ngồi trò chuyện, cười đùa và chia sẻ đủ thứ chuyện trên đời. Có những buổi gặp mặt rất đơn giản, chỉ là cùng nhau đi dạo, uống nước hay ngồi nói chuyện thật lâu, nhưng chính những khoảnh khắc bình dị ấy lại trở thành những kỷ niệm đáng nhớ. Mỗi lần gặp nhau là một lần có thêm tiếng cười, thêm những câu chuyện mới và thêm sự gắn bó giữa chúng ta.
+
+Đối với mình, những buổi gặp mặt ấy không chỉ là khoảng thời gian vui vẻ mà còn là lúc để mọi người quan tâm và lắng nghe nhau nhiều hơn. Đôi khi chỉ cần ngồi cạnh nhau, nói vài câu chuyện nhỏ cũng đủ khiến một ngày trở nên ý nghĩa hơn. Chính những điều giản dị như vậy đã làm cho tình bạn của chúng ta trở nên đặc biệt và đáng quý.
+
+Nhân ngày 8/3, mình muốn gửi đến các bạn những lời chúc chân thành nhất. Chúc các bạn luôn vui vẻ, xinh đẹp, mạnh mẽ và gặp thật nhiều may mắn trong cuộc sống. Mong rằng các bạn sẽ luôn giữ được nụ cười tươi và sự lạc quan của mình trong mọi hoàn cảnh.
+
+Hy vọng rằng trong tương lai chúng ta sẽ còn có thật nhiều dịp gặp nhau hơn nữa, cùng tạo thêm nhiều kỷ niệm đẹp và cùng nhau nhớ lại những khoảnh khắc vui vẻ đã qua. Dù thời gian có trôi đi thế nào, mình tin rằng những buổi gặp mặt và tiếng cười của chúng ta vẫn sẽ luôn là những kỷ niệm đáng nhớ.
+
+Chúc tất cả các bạn nữ một ngày 8/3 thật vui vẻ, hạnh phúc và ý nghĩa! 🌷.`
+
+let i=0
+
+function startTyping(){
+
+let target=document.getElementById("typing")
+target.innerHTML=""
+i=0
+
+function type(){
+if(i<text.length){
+target.innerHTML+=text.charAt(i)
+i++
+setTimeout(type,40)
+}
+}
+
+type()
+
+}
+
+</script>
+
+</body>
+</html>
